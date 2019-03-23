@@ -1,0 +1,127 @@
+---
+title: "Practical Machine Learning Course Project"
+author: "Jonathan Piper"
+date: "23 March 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Qualitative Activity Recognition of Weight Lifting Exercises 
+
+## Executive Summary
+
+Researchers set out to measure how well subjects performed dumbell exercises and to provide feedback. 
+Subjects performed exercises in each of 5 ways.
+
+
+  A according to specification        
+  B throwing elbows to the front      
+  C lifting the dumbells only halfway 
+  D lowering the dumbell only halfway 
+  E throwing the hips to the front    
+
+Data was derived from accelerometers on the belt, forearm, arm, and dumbell of the subjects. 
+
+The goal of the assignment is to use the training data set of 19,622 obervations, to build a prediction
+model to classify accurately the 20 test data between categorries A to E.
+
+
+### Read in the traing and test data
+
+```{r read data}
+url_train<-"https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+url_test<-"https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+
+training_zero<- read.csv(url_train)
+test<- read.csv(url_test)
+```
+
+
+### Take a look at the training data
+
+``` {r}
+head(training_zero)
+head(training_zero)
+str(training_zero)
+apply(training_zero,2,function(x){sum(is.na(x))})
+``` 
+
+### Clean Data
+
+NA's and "" values - it is clear that data columns either have no NA's or "" values, or many (always 19216 out of xxxxxx).
+Columns 1 through 7 have no predictive value - timestamp, new window, sbject name etc
+
+```{r delete NAs,"",first 7 cols}
+library(dplyr)
+training1<-training_zero[,!apply(training_zero,2,function(x) any(is.na(x)))]
+training2<-training1[,!apply(training1,2,function(x){sum((x==""))})>=1]
+training3<- select(training2,-c(1,2,3,4,5,6,7))
+```
+
+All predictor variable data is now numeric or intger, free of mssing values and NAs.
+
+### Notes on method and approach
+
+Reviewing discussion forum, particularly Len Greski's tutorials indicates that:-
+* a high degree of predictive accuracy is required in order to achive reliable predicions on every element of the twenty row test set 
+* cross validation is necesssary in order to assess theh accuracy   
+* parallel processing is essential ot get sensible run times
+
+I selected a random forest, as this algorithm is known to be accurate.  The downside of this method is lack of interpreatbility, but 
+for this assignment interpretabiliy is not a priority.
+
+For a random forest method, any further data pre-processing, such as scaling, centring, or otherwise transforming the data is unnecessary. 
+
+The choice of model was reinforced following a reading of the original paper Qualitative Activity Recognition of Weight Lifting Exercises.  
+
+### Build and Run the Model
+
+Configure parallel processing
+
+```{r}
+library(parallel)
+library(doParallel)
+
+cluster <- makeCluster(detectCores() - 1) # convention to leave 1 core for OS
+registerDoParallel(cluster)
+```
+
+Training Model
+
+```{r}
+library(caret)
+set.seed <- 4321 
+start.time <- Sys.time()
+fit <- train(classe ~ ., data=training3, method="rf", trControl=trainControl(method="cv",number =5,allowParallel=TRUE), tuneGrid=data.frame(mtry=6))
+end.time=Sys.time()
+elapsed.time<- end.time - start.time
+```
+
+De-register parallel processing cluster
+
+```{r}
+stopCluster(cluster)
+registerDoSEQ()
+```
+
+
+Final Model
+
+```{r}
+fit$finalModel
+```
+
+OOB (Out of Bag) error rate 0.28%, so accuracy 99.72%, sufficient to apply to test set. 
+
+Apply to test set
+
+```{r}
+pred <- predict(fit, test) 
+pred
+```
+
+Predicted values were submitted to the Quiz and all proved correct.
+
