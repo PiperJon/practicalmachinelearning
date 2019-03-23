@@ -197,13 +197,40 @@ $(document).ready(function () {
 <div id="executive-summary" class="section level2">
 <h2>Executive Summary</h2>
 <p>Researchers set out to measure how well subjects performed dumbell exercises and to provide feedback. Subjects performed exercises in each of 5 ways.</p>
-<p>A according to specification<br />
-B throwing elbows to the front<br />
-C lifting the dumbells only halfway D lowering the dumbell only halfway E throwing the hips to the front</p>
+<table>
+<thead>
+<tr class="header">
+<th align="center">Class</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">A</td>
+<td align="left">according to specification</td>
+</tr>
+<tr class="even">
+<td align="center">B</td>
+<td align="left">throwing elbows to the front</td>
+</tr>
+<tr class="odd">
+<td align="center">C</td>
+<td align="left">lifting the dumbells only halfway</td>
+</tr>
+<tr class="even">
+<td align="center">D</td>
+<td align="left">lowering the dumbell only halfway</td>
+</tr>
+<tr class="odd">
+<td align="center">E</td>
+<td align="left">throwing the hips to the front</td>
+</tr>
+</tbody>
+</table>
 <p>Data was derived from accelerometers on the belt, forearm, arm, and dumbell of the subjects.</p>
 <p>The goal of the assignment is to use the training data set of 19,622 obervations, to build a prediction model to classify accurately the 20 test data between categorries A to E.</p>
-<div id="read-in-the-traing-and-test-data" class="section level3">
-<h3>Read in the traing and test data</h3>
+<div id="read-in-the-training-and-test-data" class="section level3">
+<h3>Read in the training and test data</h3>
 <pre class="r"><code>url_train&lt;-&quot;https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv&quot;
 url_test&lt;-&quot;https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv&quot;
 
@@ -212,7 +239,6 @@ test&lt;- read.csv(url_test)</code></pre>
 </div>
 <div id="take-a-look-at-the-training-data" class="section level3">
 <h3>Take a look at the training data</h3>
-<pre class="r"><code>head(training_zero)</code></pre>
 <pre><code>##   X user_name raw_timestamp_part_1 raw_timestamp_part_2   cvtd_timestamp
 ## 1 1  carlitos           1323084231               788290 05/12/2011 11:23
 ## 2 2  carlitos           1323084231               808298 05/12/2011 11:23
@@ -493,7 +519,6 @@ test&lt;- read.csv(url_test)</code></pre>
 ## 4              -16              658              469      A
 ## 5              -17              655              473      A
 ## 6               -9              660              478      A</code></pre>
-<pre class="r"><code>head(training_zero)</code></pre>
 <pre><code>##   X user_name raw_timestamp_part_1 raw_timestamp_part_2   cvtd_timestamp
 ## 1 1  carlitos           1323084231               788290 05/12/2011 11:23
 ## 2 2  carlitos           1323084231               808298 05/12/2011 11:23
@@ -774,7 +799,6 @@ test&lt;- read.csv(url_test)</code></pre>
 ## 4              -16              658              469      A
 ## 5              -17              655              473      A
 ## 6               -9              660              478      A</code></pre>
-<pre class="r"><code>str(training_zero)</code></pre>
 <pre><code>## 'data.frame':    19622 obs. of  160 variables:
 ##  $ X                       : int  1 2 3 4 5 6 7 8 9 10 ...
 ##  $ user_name               : Factor w/ 6 levels &quot;adelmo&quot;,&quot;carlitos&quot;,..: 2 2 2 2 2 2 2 2 2 2 ...
@@ -876,7 +900,6 @@ test&lt;- read.csv(url_test)</code></pre>
 ##  $ min_yaw_dumbbell        : Factor w/ 73 levels &quot;&quot;,&quot;-0.1&quot;,&quot;-0.2&quot;,..: 1 1 1 1 1 1 1 1 1 1 ...
 ##  $ amplitude_roll_dumbbell : num  NA NA NA NA NA NA NA NA NA NA ...
 ##   [list output truncated]</code></pre>
-<pre class="r"><code>apply(training_zero,2,function(x){sum(is.na(x))})</code></pre>
 <pre><code>##                        X                user_name     raw_timestamp_part_1 
 ##                        0                        0                        0 
 ##     raw_timestamp_part_2           cvtd_timestamp               new_window 
@@ -1005,7 +1028,7 @@ training3&lt;- select(training2,-c(1,2,3,4,5,6,7))</code></pre>
 </div>
 <div id="notes-on-method-and-approach" class="section level3">
 <h3>Notes on method and approach</h3>
-<p>Reviewing discussion forum, particularly Len Greski’s tutorials indicates that:- * a high degree of predictive accuracy is required in order to achive reliable predicions on every element of the twenty row test set * cross validation is necesssary in order to assess theh accuracy<br />
+<p>Reviewing discussion forum, particularly Len Greski’s tutorials indicates that:- * a high degree of predictive accuracy (&lt;99%) is required in order to achive reliable predicions on every element of the twenty row test set * cross validation is necesssary in order to assess theh accuracy<br />
 * parallel processing is essential ot get sensible run times</p>
 <p>I selected a random forest, as this algorithm is known to be accurate. The downside of this method is lack of interpreatbility, but for this assignment interpretabiliy is not a priority.</p>
 <p>For a random forest method, any further data pre-processing, such as scaling, centring, or otherwise transforming the data is unnecessary.</p>
@@ -1032,7 +1055,9 @@ registerDoParallel(cluster)</code></pre>
 start.time &lt;- Sys.time()
 fit &lt;- train(classe ~ ., data=training3, method=&quot;rf&quot;, trControl=trainControl(method=&quot;cv&quot;,number =5,allowParallel=TRUE), tuneGrid=data.frame(mtry=6))
 end.time=Sys.time()
-elapsed.time&lt;- end.time - start.time</code></pre>
+elapsed.time&lt;- end.time - start.time
+elapsed.time</code></pre>
+<pre><code>## Time difference of 2.654562 mins</code></pre>
 <p>De-register parallel processing cluster</p>
 <pre class="r"><code>stopCluster(cluster)
 registerDoSEQ()</code></pre>
@@ -1045,14 +1070,14 @@ registerDoSEQ()</code></pre>
 ##                      Number of trees: 500
 ## No. of variables tried at each split: 6
 ## 
-##         OOB estimate of  error rate: 0.31%
+##         OOB estimate of  error rate: 0.27%
 ## Confusion matrix:
 ##      A    B    C    D    E  class.error
-## A 5578    1    0    0    1 0.0003584229
-## B   11 3782    4    0    0 0.0039504872
-## C    0   11 3408    3    0 0.0040911748
-## D    0    0   20 3194    2 0.0068407960
-## E    0    0    1    6 3600 0.0019406709</code></pre>
+## A 5579    1    0    0    0 0.0001792115
+## B   10 3784    3    0    0 0.0034237556
+## C    0   12 3410    0    0 0.0035067212
+## D    0    0   19 3195    2 0.0065298507
+## E    0    0    1    4 3602 0.0013861935</code></pre>
 <p>OOB (Out of Bag) error rate 0.28%, so accuracy 99.72%, sufficient to apply to test set.</p>
 <p>Apply to test set</p>
 <pre class="r"><code>pred &lt;- predict(fit, test) 

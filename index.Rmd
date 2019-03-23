@@ -16,12 +16,13 @@ knitr::opts_chunk$set(echo = TRUE)
 Researchers set out to measure how well subjects performed dumbell exercises and to provide feedback. 
 Subjects performed exercises in each of 5 ways.
 
-
-  A according to specification        
-  B throwing elbows to the front      
-  C lifting the dumbells only halfway 
-  D lowering the dumbell only halfway 
-  E throwing the hips to the front    
+ |Class | Description                       |
+ |:----:|:----------------------------------|
+ |  A   | according to specification        |
+ |  B   | throwing elbows to the front      |
+ |  C   | lifting the dumbells only halfway |
+ |  D   | lowering the dumbell only halfway |
+ |  E   | throwing the hips to the front    |
 
 Data was derived from accelerometers on the belt, forearm, arm, and dumbell of the subjects. 
 
@@ -29,7 +30,7 @@ The goal of the assignment is to use the training data set of 19,622 obervations
 model to classify accurately the 20 test data between categorries A to E.
 
 
-### Read in the traing and test data
+### Read in the training and test data
 
 ```{r read data}
 url_train<-"https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
@@ -42,7 +43,7 @@ test<- read.csv(url_test)
 
 ### Take a look at the training data
 
-``` {r}
+``` {r echo=FALSE}
 head(training_zero)
 head(training_zero)
 str(training_zero)
@@ -54,7 +55,7 @@ apply(training_zero,2,function(x){sum(is.na(x))})
 NA's and "" values - it is clear that data columns either have no NA's or "" values, or many (always 19216 out of xxxxxx).
 Columns 1 through 7 have no predictive value - timestamp, new window, sbject name etc
 
-```{r delete NAs,"",first 7 cols}
+```{r echo=TRUE}
 library(dplyr)
 training1<-training_zero[,!apply(training_zero,2,function(x) any(is.na(x)))]
 training2<-training1[,!apply(training1,2,function(x){sum((x==""))})>=1]
@@ -66,7 +67,7 @@ All predictor variable data is now numeric or intger, free of mssing values and 
 ### Notes on method and approach
 
 Reviewing discussion forum, particularly Len Greski's tutorials indicates that:-
-* a high degree of predictive accuracy is required in order to achive reliable predicions on every element of the twenty row test set 
+* a high degree of predictive accuracy (<99%) is required in order to achive reliable predicions on every element of the twenty row test set 
 * cross validation is necesssary in order to assess theh accuracy   
 * parallel processing is essential ot get sensible run times
 
@@ -98,6 +99,7 @@ start.time <- Sys.time()
 fit <- train(classe ~ ., data=training3, method="rf", trControl=trainControl(method="cv",number =5,allowParallel=TRUE), tuneGrid=data.frame(mtry=6))
 end.time=Sys.time()
 elapsed.time<- end.time - start.time
+elapsed.time
 ```
 
 De-register parallel processing cluster
